@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c8102e">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Talão de Pedido Selmi 2026</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#1c2230;--mut:#6b7280;--line:#e5e7eb;--red:#c8102e;--red2:#a30d25;--ok:#0f7b4a}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:15px/1.35 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+header{background:var(--red);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 14px 10px}
+header h1{margin:0;font-size:17px;letter-spacing:.2px}
+header small{opacity:.85}
+.wrap{max-width:720px;margin:0 auto}
+details.cab{background:var(--card);margin:10px;border-radius:12px;border:1px solid var(--line)}
+details.cab summary{padding:12px 14px;font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between}
+details.cab summary::after{content:"▾";color:var(--mut)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 14px}
+.grid .full{grid-column:1/-1}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:2px}
+input,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+textarea{min-height:56px;resize:vertical}
+.sticky{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 10px 6px}
+.search{font-size:16px;padding:12px 14px;border-radius:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 2px}
+.chip{flex:none;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;color:var(--ink)}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff}
+.sec{margin:14px 12px 4px;font-weight:700;font-size:13px;color:var(--red2);text-transform:uppercase;letter-spacing:.3px}
+.pack{margin:0 12px 6px;font-size:12px;color:var(--mut)}
+.item{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;background:var(--card);margin:0 10px 6px;padding:9px 10px;border-radius:12px;border:1px solid var(--line)}
+.item.has{border-color:var(--ok);background:#f2fbf6}
+.item .nm{flex:1 1 100%;min-width:0}
+.item .ctl{display:flex;align-items:flex-end;gap:8px;width:100%}
+.item .ctl .pr{flex:1;min-width:0}
+.item .ctl .pr label,.dsc label,.upc label{font-size:10px;margin:0 0 2px}
+.item .ctl .pr input{padding:8px 6px;font-size:15px}
+.ctl2{display:flex;align-items:center;gap:8px;width:100%;justify-content:space-between}
+.upc{width:62px}
+.upc input{padding:8px 4px;text-align:center;font-size:15px}
+.sub{flex:1;text-align:right;font-weight:700;font-size:13px;color:var(--ok);min-height:18px;align-self:center}
+.item .nm b{display:block;font-size:14.5px;font-weight:600}
+.item .nm span{font-size:11.5px;color:var(--mut)}
+.qty{display:flex;align-items:center;gap:4px}
+.qty button{width:34px;height:36px;border:1px solid var(--line);background:#fff;border-radius:9px;font-size:20px;line-height:1;color:var(--ink)}
+.qty input{width:50px;text-align:center;padding:8px 2px;font-size:16px;font-weight:600}
+.dsc{width:58px}
+.dsc input{padding:8px 4px;text-align:center;font-size:14px}
+.dsc label{text-align:center;margin:0}
+.empty{text-align:center;color:var(--mut);padding:30px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center;z-index:9}
+.bar .tot{flex:1}
+.bar .tot b{font-size:20px;display:block}
+.bar .tot span{font-size:12px;color:var(--mut)}
+.btn{border:0;border-radius:12px;padding:13px 16px;font:inherit;font-weight:700;background:var(--red);color:#fff}
+.btn.sec2{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.wa{background:#1fa855}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:20;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.sheet{background:#fff;width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.sheet h2{margin:0 0 4px;font-size:18px}
+.sum{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0}
+.sum td,.sum th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.sum td.r,.sum th.r{text-align:right;white-space:nowrap}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.acts .full{grid-column:1/-1}
+.msg{font-size:12.5px;color:var(--ok);min-height:18px;margin-top:6px}
+a.btn{text-decoration:none;text-align:center;display:block}
+.hb{float:right;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:7px 12px;font:inherit;font-size:13px;font-weight:600}
+.hcard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0}
+.hcard b{display:block}
+.hcard .m{font-size:12.5px;color:var(--mut)}
+.hcard .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.hcard .row button{padding:8px 11px;font-size:13px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:600}
+.hcard .row button.d{color:var(--red)}
+.hcard pre{white-space:pre-wrap;font:12px/1.4 ui-monospace,Menlo,monospace;background:#f7f7f8;padding:8px;border-radius:8px;margin:8px 0 0;display:none}
+.hcard pre.on{display:block}
+</style>
+</head>
+<body>
+<header><div class="wrap"><button class="hb" id="bh">Histórico</button><h1>PASTIFÍCIO SELMI S/A — Talão de Pedido 2026</h1><small>Renata · Galo</small></div></header>
+<div class="wrap">
+<details class="cab" id="cab" open>
+<summary>Dados do pedido</summary>
+<div class="grid">
+<div class="full"><label>Razão Social</label><input id="f_razao" autocomplete="off"></div>
+<div><label>Cód. Cliente</label><input id="f_cli" inputmode="numeric"></div>
+<div><label>Nº Pedido</label><input id="f_ped"></div>
+<div><label>Cidade</label><input id="f_cid"></div>
+<div><label>UF</label><input id="f_uf" maxlength="2"></div>
+<div><label>Cód. Repres.</label><input id="f_rep"></div>
+<div><label>Prazo</label><input id="f_prazo"></div>
+<div><label>Data emissão</label><input id="f_data" type="date"></div>
+<div class="full"><label>Obs. gerais</label><textarea id="f_obs"></textarea></div>
+</div>
+</details>
+<div class="sticky">
+<input class="search" id="q" type="search" placeholder="Buscar produto ou código…" autocomplete="off">
+<div class="chips" id="chips"></div>
+</div>
+<div id="list"></div>
+</div>
+<div class="bar">
+<div class="tot"><b id="tm">R$ 0,00</b><span><span id="tv">0 volumes</span> · <span id="ti">0 itens</span></span></div>
+<button class="btn sec2" id="bcl">Limpar</button>
+<button class="btn" id="bsum">Ver pedido</button>
+</div>
+<div class="modal" id="modal"><div class="sheet">
+<h2>Resumo do pedido</h2>
+<div id="hdr" style="font-size:13px;color:var(--mut)"></div>
+<table class="sum" id="sum"></table>
+<div class="acts">
+<a class="btn wa full" id="wa" href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+<button class="btn" id="sv">Salvar no histórico</button>
+<button class="btn sec2" id="dl">Baixar .txt</button>
+<button class="btn sec2" id="cp">Copiar texto</button>
+<button class="btn sec2" id="cx">Fechar</button>
+</div>
+<div class="msg" id="msg"></div>
+</div></div>
+<div class="modal" id="hm"><div class="sheet">
+<h2>Histórico de pedidos</h2>
+<div style="font-size:12.5px;color:var(--mut)">Salvo neste aparelho.</div>
+<div id="hl"></div>
+<div class="acts"><button class="btn" id="hnew">Novo pedido</button><button class="btn sec2" id="hx">Fechar</button></div>
+<div class="msg" id="hmsg"></div>
+</div></div>
+<script>
+const RAW=[
+"BISCOITOS|BISCOITOS LAMINADOS DOCES RENATA|BISCOITOS LAMINADOS DOCES - CX C/ 20 PCTS 360g|20|157.02.30=COCO;157.02.20=LEITE;157.03.20=MAIZENA;157.02.10=MARIA",
+"~|~|BISCOITOS LAMINADOS DOCES - CX C/ 30 PCTS 170g|30|157.02.29=LEITE;157.03.19=MAIZENA",
+"~|~|BISCOITOS RENATA CRISTAL - CX C/ 20 PCTS 420g|20|157.02.40=RENATA CRISTAL",
+"~|BISCOITOS LAMINADOS SALGADOS RENATA|BISCOITOS LAMINADOS SALGADOS - CX C/ 20 PCTS 360g|20|157.01.20=ÁGUA E SAL;157.00.40=CRACKER INTEGRAL;157.00.20=CREAM CRACKER;157.05.20=FERMENTACAO NAT;157.04.20=GERGELIM",
+"~|~|BISCOITOS LAMINADOS SALGADOS - CX C/ 30 PCTS 170g|30|157.01.19=ÁGUA E SAL;157.00.39=CRACKER INTEGRAL;157.00.19=CREAM CRACKER;157.04.19=GERGELIM",
+"~|BISCOITOS LAMINADOS DOCES GALO|BISCOITOS LAMINADOS DOCES - CX C/ 20 PCTS 360g|20|159.03.20=MAIZENA",
+"~|BISCOITOS LAMINADOS SALGADOS GALO|BISCOITOS LAMINADOS SALGADOS - CX C/ 20 PCTS 360g|20|159.01.20=ÁGUA E SAL;159.00.20=CREAM CRACKER",
+"~|BISCOITO RENATA SALTIX|BISCOITO RENATA SALTIX - CX C/ 36 PCTS 110g|36|157.00.70=RENATA SALTIX",
+"~|BISCOITOS RENATA COOKIES|BISCOITOS COOKIES - CX C/ 24 PCTS 100g|24|156.03.02=BAUNIL.C/ GT CHOC;156.04.02=CHOC.C/ GT CHOC",
+"~|~|BISCOITOS COOKIES - CX C/ 8 DISP 12 PCTS 40g|96|156.12.12=BAUNIL.C/ GT CHOC;156.14.02=CHOC.C/ GT CHOC",
+"~|BISCOITOS RENATA INTEGRALE|BISCOITOS RENATA INTEGRALE - CX C/ 36 PCTS 150g|36|153.01.60=AVEIA MEL BANANA;152.01.60=CACAU E AVEIA;152.00.60=MORANGO E AVEIA",
+"~|BISCOITOS WAFER RENATA|BISCOITOS WAFER - CX C/ 40 PCST 115g|40|155.03.87=BRIGADEIRO;155.00.87=CHOCOLATE;155.06.87=LIMÃO;155.01.87=MORANGO",
+"~|BISCOITOS RECHEADOS RENATA|BISCOITOS RECHEADOS RENATA - CX C/ 36 PCTS 112g|36|153.00.64=CHOCOLATE;153.01.64=MORANGO;153.04.64=TWITTER",
+"~|~|BISCOITOS RECHEADOS RENATA DIVERTIX - CS C/ 36 PCTS 112g|36|153.23.64=BRIGADEIRO;153.20.64=CHOCOLATE;153.21.64=MORANGO",
+"~|~|BISCOITOS RECHEADOS DEITADOS RENATA - CX C/ 48 PCTS 80g|48|153.00.14=CHOCOLATE;153.01.14=MORANGO;153.04.14=TWITTER",
+"~|BISCOITOS RECHEADOS GALO|BISCOITOS RECHEADOS GALO SHOW - CX C/ 36 PCTS 112g|36|154.12.58=BRIGADEIRO;154.10.58=CHOCOLATE;154.11.58=MORANGO",
+"~|BISCOITOS AMANTEIGADOS RENATA|BISCOITOS AMANTEIGADOS RENATA - CX 36 PCTS 133g|36|151.00.96=CHOCOLATE;151.01.96=COCO;151.02.96=LEITE",
+"~|~|BISCOITOS AMANTEIGADOS RENATA - CX 12 PCTS 330g|12|151.00.76=CHOCOLATE;151.01.76=COCO;151.02.76=LEITE",
+"~|~|BISCOITOS AMANTEIGADOS RENATA DIVERTIX - CX 36 PCTS 110g|36|151.00.98=BABY SHARK LEITE;151.00.97=BABY SHARK CHOC.",
+"~|BISCOITOS ROSQUINHAS GALO|ROSQUINHA GALO SHOW - 20 PCTS 300g|20|150.10.70=CHOCOLATE;150.11.65=COCO;150.12.70=LEITE",
+"~|~|ROSQUINHA GALO SHOW - 10 PCTS 600g|10|150.11.71=COCO",
+"EMPACOTAMENTO|MISTURA PARA BOLO RENATA|MISTURA PARA BOLO RENATA - CX C/ 12 PCTS 400g|12|140.46.10=ABACAXI;140.48.10=AIPIM;140.41.10=BAUNILHA;140.50.10=BRIGADEIRO;140.53.10=BROWNIE;140.49.10=CENOURA;140.40.10=CHOCOLATE;140.44.10=COCO;140.42.10=FUBÁ;140.43.10=LARANJA;140.45.10=LIMÃO",
+"~|AZEITE RENATA|AZEITE RENATA - CX C/ 12x500ml|12|170.01.76=AZEITE VIDRO;170.21.76=AZEITE ORGÂNICO",
+"~|FARINHA RENATA|FARINHA RENATA - FARDO C/ 10 PCTS 1kg|10|009.51.08=FARINHA RENATA;009.52.08=FARINHA DIA A DIA;009.53.08=FARINHA INTEGRAL;024.55.08=SEMOLINA RENATA",
+"~|~|FARINHA RENATA PAPEL - FARDO C/ 10 PCTS 5kg|10|009.52.28=FARINHA DIA A DIA",
+"~|~|FARINHA RENATA PLÁSTICO - FARDO C/ 10 PCTS 1kg|10|009.52.18=FARINHA DIA A DIA",
+"BOLOS|BOLOS RENATA|BOLOS RENATA - CS C/ 12 PCTS 250g|12|075.61.54=CHOCOLATE;075.67.54=GOTAS DE CHOCOL.;075.66.54=LARANJA;075.69.54=MESCLADO",
+"~|~|BOLOS RECHEADO RENATA - CX C/ 12 PCTS 300g|12|094.03.55=CHOCO. C/ CHOCO.;094.05.55=COCO C/ CHOCO.;094.04.55=LEITE C/ LEIT. COND",
+"~|MINIBOLO RENATA DIVERTIX|MINIBOLO RECHEADOS RENATA DIVERTIX - CX C/ 2x20x40g|40|104.32.18=BAUNIL. C/ CHOCO.;104.33.18=BAUNIL. C/ MORAN.;104.37.18=CHOCO. C/ BRIGAD.;104.31.18=CHOCO. C/ CHOCO.",
+"~|~|MINIBOLO SEM RECHEIO RENATA - CX C/ 2x20x35g|40|104.24.18=CHOCOLATE;104.23.18=LARANJA",
+"INSTANTÂNEOS|MASSAS INSTANTÂNEAS RENATA|INSTANTÂNEO RENATA EXPRESS - CX C/ 50 PCTS 85g|50|040.33.36=CARNE;040.37.36=CARNE C/ TOMATE;040.32.36=GALINHA;040.34.36=GALINHA CAIPIRA;040.36.36=LEGUMES",
+"~|~|INSTANTÂNEO RENATA EXPRESS - CX C/ 50 PCTS 96g|50|040.38.36=FEIJÃO C/ BACON",
+"~|~|INSTANTÂNEO RENATA EXPRESS CREMOSO - CX C/ 50 PCTS 88g|50|101.03.44=4 QUEIJOS;101.04.44=FRANGO;101.01.44=PICANHA",
+"~|~|INSTANTÂNEO RENATA DIVERTIX - CX C/ 50 PCTS 85g|50|102.42.36=CARNE SUAVE;102.43.36=GALINHA SUAVE",
+"~|~|CONJUNTO INSTANTÂNEO RENATA EXPRESS - CX C/ 20 x 4 x 85g|80|040.10.40=2 GAL CAIP 2 CARNE",
+"MASSAS RENATA|MASSAS RENATA SUPERIORE|MASSAS RENATA SUPERIORE - FARDO C/ 20 PCTS 500g|20|001.29.05=CAPELLI D'ANGELO;001.21.05=TAGLIARINI",
+"~|~|MASSAS RENATA SUPERIORE - FARDO C/ 16 PCTS 500g|16|001.04.16=FARFALLE;001.16.16=FUSILLI;001.17.16=PENNE",
+"~|MASSAS RENATA SUPERIORE TRICOLORI -FARDO C/ 16 PCTS 500g||1|002.16.16=FUSILLI TRICOLORI;002.17.16=PENNE TRICOLORI",
+"~|~|MASSAS RENATA SUPERIORE - FARDO C/ 30 PCTS 500g|30|001.27.06=LINGUINE;001.26.06=SPAGUETTI 8;001.24.06=SPAGHETTINI 10",
+"~|~|LASANHA RENATA SUPERIORE CARTUCHO - CX C/ 15 PCTS 200g|15|044.46.01=LASANHA CARTUC.",
+"~|~|MASSAS RENATA SUPERIORE TEXTURIZADO - CX C/ 20 PCTS 200g|20|030.74.02=PAPPARDELLE;030.20.02=TAGLIARINI",
+"~|MASSAS RENATA SUPERIORE INTEGRALE|MASSAS RENATA SUPERIORE INTEGRALE - FARDO C/ 16 PCTS 500g|16|023.04.16=FARFALLE;023.16.16=FUSILLI;023.17.16=PENNE",
+"~|~|MASSAS RENATA SUPERIORE INTEGRALE - FARDO C/ 30 PCTS 500g|30|023.26.30=SPAGUETTI 8",
+"~|MASSAS RENATA C/ OVOS|MASSAS RENATA C/ OVOS - FARDO C/ 20 PCTS 500g|20|005.08.05=AVE MARIA;005.19.05=CARACOLINO;005.05.05=CONCHA;005.04.05=GRAVATA;005.11.05=NHOQUE;005.07.05=PADRE NOSSO;005.36.05=PARAFUSINHO;005.16.05=PARAFUSO;005.17.05=PENA",
+"~|~|MASSAS RENATA C/ OVOS - CX C/ 20 PCTS 500g|20|005.29.05=ALETRIA;005.21.05=NINHO 2;005.22.05=NINHO 3;005.74.05=PAPPARDELLE",
+"~|~|MASSAS RENATA C/ OVOS DIVERTIX - FARDO C/ 20 PCTS 500g|20|005.33.25=ALFABETO",
+"~|~|MASSAS RENATA C/ OVOS - FARDO C/ 30 PCTS 500g|30|005.26.06=ESPAGUETE 8;005.25.06=ESPAGUETINHO 9;005.32.06=FETTUCCINE;005.24.06=FIDELINHO 10;005.28.06=FURADINHO 5;005.27.06=LINGUINE",
+"~|~|LASANHA RENATA C/ OVOS - CX C/ 20 PCTS 500g|20|004.39.05=LASANHA",
+"~|~|LASANHA RENATA C/ OVOS - CX C/ 14x 2 x 200g|28|004.39.78=LASANHA PRÉ COZ",
+"~|~|MASSAS RENATA C/ OVOS TRICOLORI - FARDO C/ 30 PCTS 200g|30|005.31.23=PARAFUSO TRICOL",
+"~|~|MASSAS RENATA C/ OVOS TRICOLORI - FARDO C/ 20 PCTS 500g|20|005.31.05=PARAFUSO TRICOL;005.30.05=PENA TRICOLORI",
+"~|MASSAS RENATA C/ OVOS TIPO CASEIRA|MASSAS RENATA C/ OVOS CASEIRA - CX C/ 20 PCTS 500g|20|004.34.05=GRAVATA;004.35.05=TALHARIM 1;004.33.05=TALHARIM 2;004.32.05=TALHARIM 3",
+"~|MASSAS RENATA ORGÂNICO|MASSAS RENATA ORGÂNICO - FARDO C/ 24 PCTS 500g|24|101.26.04=SPAGUETTI 8",
+"~|MASSAS RENATA SEM GLÚTEN|MASSAS RENATA SEM GLÚTEN - FARDO C/ 24 PCTS 500g|24|105.26.06=ESPAGUETE 8;105.16.05=PARAFUSO;105.17.05=PENA",
+"~|MASSAS RENATA PROTEIN+|MASSAS RENATA PROTEIN+ - FARDO C/ 24 PCTS 500g|24|111.26.04=ESPAGUETE 8",
+"~|~|MASSAS RENATA PROTEIN+ - FARDO C/ 16 PCTS 500g|16|105.16.04=PARAFUSO",
+"~|RETALHO MASSAS RENATA SUPERIORE|RETALHO MASSAS RENATA SUPERIORE - SACOS|1|023.51.15=SACO C/ 15g",
+"MASSAS GALO|MASSAS GALO SÊMOLA|MASSAS GALO SÊMOLA - FARDO C/ 20 PCTS 500g|20|006.10.05=ARGOLA;006.08.05=AVE MARIA;006.37.05=BOCA DE LEÃO;006.19.05=CARACOLINO;006.05.05=CONCHA;006.04.05=GRAVATA;006.11.05=NHOQUE;006.07.05=PADRE NOSSO;006.36.05=PARAFUSINHO;006.16.05=PARAFUSO;006.17.05=PENA;006.12.05=RIGATONE;006.13.05=TORTIGLIONE",
+"~|~|MASSAS GALO SÊMOLA - CX C/ 20 PCTS 500g|20|006.29.05=ALETRIA;006.21.05=NINHO 2;006.22.05=NINHO 3",
+"~|~|MASSAS GALO SÊMOLA - FARDO C/ 30 PCTS 500g|30|006.42.06=ESPAGUETONE 7;006.26.06=ESPAGUETE 8;006.25.06=ESPAGUETINHO 9;006.32.06=FETTUCCINE;006.24.06=FIDELINHO 10;006.28.06=FURADINHO 5;006.27.06=LINGUINE",
+"~|~|MASSAS GALO SÊMOLA - FARDO C/ 15 PCTS 1kg|15|006.26.09=ESPAGUETE 8;006.28.09=FURADINHO 5",
+"~|~|MASSAS GALO SÊMOLA - FARDO C/ 12 PCTS 1kg|12|006.16.78=PARAFUSO",
+"~|~|MASSAS GALO SHOW SÊMOLA - FARDO C/ 20 PCTS 500g|20|006.33.05=ALFABETO",
+"~|~|LASANHA GALO SÊMOLA - CX C/ 20 PCTS 500g|20|006.39.05=LASANHA",
+"~|~|LASANHA GALO SÊMOLA - CX C/ 14x 2 x 200g|28|006.39.78=LASANHA PRÉ COZ",
+"~|~|MASSAS GALO SÊMOLA TRICOLORI - FARDO C/ 20 PCTS 500g|20|006.31.05=PARAFUSO TRICOL;006.30.05=PENA TRICOLORI",
+"~|MASSAS GALO SÊMOLA INTEGRAL|MASSAS GALO SÊMOLA INTEGRAL - FARDO C/ 20 PCTS 500g|20|016.16.05=PARAFUSO;016.17.05=PENA",
+"~|~|MASSAS GALO SÊMOLA INTEGRAL - FARDO C/ 30 PCTS 500g|30|016.26.06=ESPAGUETE 8",
+"~|RETALHO MASSAS GALO SÊMOLA|RETALHO MASSAS GALO SÊMOLA - SACOS|1|006.50.12=SACO C/ 5g;006.51.15=SACO C/ 15g"
+];
+const ITEMS=[];
+(function(){let k='',s='',g='';
+ for(const ln of RAW){const p=ln.split('|');
+  if(p[0]!=='~')k=p[0];if(p[1]!=='~')s=p[1];if(p[2]!=='~')g=p[2];
+  const u=parseInt(p[3]);
+  for(const it of p[4].split(';')){const j=it.indexOf('=');ITEMS.push({c:it.slice(0,j),n:it.slice(j+1),k,s,g,u})}
+ }})();
+// Categoria única para a linha Galo Sêmola 1 kg
+ITEMS.forEach(i=>{if(/SÊMOLA/i.test(i.s)&&/\b1\s?kg\b/i.test(i.g)){i.k='MASSAS GALO 1KG';i.s='MASSAS GALO 1KG'}});
+const KEY='selmi_pedido_2026_v1';
+let st={f:{},q:{}};
+try{const s=localStorage.getItem(KEY);if(s)st=JSON.parse(s)}catch(e){}
+st.f=st.f||{};st.q=st.q||{};st.p=st.p||{};st.u=st.u||{};st.h=st.h||[];
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+const $=id=>document.getElementById(id);
+const cats=['Todos',...[...new Set(ITEMS.map(i=>i.k))].sort((a,b)=>(a==='MASSAS GALO 1KG')-(b==='MASSAS GALO 1KG'))];
+let cat='Todos',term='';
+const FIELDS=['razao','cli','ped','cid','uf','rep','prazo','data','obs'];
+FIELDS.forEach(k=>{const el=$('f_'+k);el.value=st.f[k]||'';el.addEventListener('input',()=>{st.f[k]=el.value;save()})});
+if(!st.f.data){const d=new Date();st.f.data=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');$('f_data').value=st.f.data}
+function num(v){const n=parseFloat(String(v==null?'':v).replace(',','.'));return isNaN(n)?0:n}
+function brl(n){return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+const BYC={};ITEMS.forEach(i=>BYC[i.c]=i);
+function upc(it){const o=num(st.u[it.c]);return o>0?o:it.u}
+function box(c){return upc(BYC[c])*num(st.p[c])*(1-num((st.q[c]||{}).d)/100)}
+function line(c){const o=st.q[c];if(!o||!(o.q>0))return 0;return o.q*box(c)}
+function sub(c){const b=box(c);if(!(b>0))return '';const l=line(c);return brl(b)+'/cx'+(l>0?' → '+brl(l):'')}
+function norm(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function renderChips(){$('chips').innerHTML=cats.map(c=>`<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${esc(c==='Todos'?'Todos':c==='MASSAS GALO 1KG'?'Massas Galo 1kg':c[0]+c.slice(1).toLowerCase())}</button>`).join('')}
+$('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;cat=b.dataset.c;renderChips();renderList()});
+$('q').addEventListener('input',e=>{term=norm(e.target.value);renderList()});
+function renderList(){
+ let h='',ls='',lg='';
+ for(const it of ITEMS){
+  if(cat!=='Todos'&&it.k!==cat)continue;
+  if(term&&!norm(it.n+' '+it.c+' '+it.s+' '+it.g).includes(term))continue;
+  const sk=it.k+'|'+it.s, gk=sk+'|'+it.g;
+  if(sk!==ls){h+=`<div class="sec">${esc(it.s||it.k)}</div>`;ls=sk;lg=''}
+  if(gk!==lg&&it.g){h+=`<div class="pack">${esc(it.g)}</div>`;lg=gk}
+  const v=st.q[it.c]||{};
+  const p=st.p[it.c]||'';
+  h+=`<div class="item ${v.q>0?'has':''}" data-c="${it.c}"><div class="nm"><b>${esc(it.n)}</b><span>${it.c}</span></div>
+  <div class="ctl"><div class="pr"><label>Valor unitário R$</label><input data-k="p" inputmode="decimal" value="${p}" placeholder="0,00"></div>
+  <div class="upc"><label>Un. por cx</label><input data-k="u" inputmode="numeric" value="${upc(it)}"></div>
+  <div class="dsc"><label>Desc %</label><input data-k="d" inputmode="decimal" value="${v.d||''}" placeholder="0"></div></div>
+  <div class="ctl2"><div class="qty"><button data-a="-">−</button><input data-k="q" inputmode="numeric" value="${v.q||''}" placeholder="0"><button data-a="+">+</button></div>
+  <div class="sub">${sub(it.c)}</div></div></div>`;
+ }
+ $('list').innerHTML=h||'<div class="empty">Nenhum produto encontrado</div>';
+}
+function setQ(code,k,val){
+ const o=st.q[code]||(st.q[code]={});
+ if(k==='q'){val=Math.max(0,parseInt(val)||0);o.q=val}else{o.d=val}
+ if(!o.q&&!o.d)delete st.q[code];
+ save();totals();
+}
+$('list').addEventListener('click',e=>{
+ const b=e.target.closest('button[data-a]');if(!b)return;
+ const row=b.closest('.item'),c=row.dataset.c,cur=(st.q[c]||{}).q||0;
+ const nv=Math.max(0,cur+(b.dataset.a==='+'?1:-1));
+ setQ(c,'q',nv);row.querySelector('input[data-k=q]').value=nv||'';row.classList.toggle('has',nv>0);row.querySelector('.sub').textContent=sub(c);
+});
+$('list').addEventListener('input',e=>{
+ const i=e.target;if(!i.dataset.k)return;
+ const row=i.closest('.item'),c=row.dataset.c;
+ if(i.dataset.k==='p'){st.p[c]=i.value.replace(',','.');if(!i.value)delete st.p[c];save();totals()}
+ else if(i.dataset.k==='u'){const n=parseInt(i.value)||0;if(n>0&&n!==BYC[c].u)st.u[c]=n;else delete st.u[c];save();totals()}
+ else if(i.dataset.k==='q'){const v=parseInt(i.value)||0;setQ(c,'q',v);row.classList.toggle('has',v>0)}
+ else setQ(c,'d',i.value.replace(',','.'));
+ row.querySelector('.sub').textContent=sub(c);
+});
+$('list').addEventListener('focusin',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>e.target.select&&e.target.select(),0)});
+function sel(){return ITEMS.filter(i=>st.q[i.c]&&st.q[i.c].q>0)}
+function money(){return sel().reduce((a,i)=>a+line(i.c),0)}
+function totals(){$('tm').textContent=brl(money());const s=sel();const v=s.reduce((a,i)=>a+st.q[i.c].q,0);$('tv').textContent=v+(v===1?' volume':' volumes');$('ti').textContent=s.length+(s.length===1?' item':' itens')}
+function dataBR(d){if(!d)return'';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d}
+function text(plain){
+ const f=st.f,s=sel();
+ let t='*PEDIDO SELMI 2026*\n';
+ if(f.razao)t+='Cliente: '+f.razao+'\n';
+ if(f.cli)t+='Cód. Cliente: '+f.cli+'\n';
+ if(f.ped)t+='Nº Pedido: '+f.ped+'\n';
+ if(f.cid||f.uf)t+='Cidade: '+[f.cid,f.uf].filter(Boolean).join('/')+'\n';
+ if(f.rep)t+='Cód. Repres.: '+f.rep+'\n';
+ if(f.prazo)t+='Prazo: '+f.prazo+'\n';
+ if(f.data)t+='Data: '+dataBR(f.data)+'\n';
+ t+='\n';
+ let last='';
+ for(const i of s){
+  const sec=i.s||i.k;
+  const hd=sec+(i.g?' — '+i.g.replace(/^.*? - /,''):'');
+  if(hd!==last){t+='\n*'+hd+'*\n';last=hd}
+  const o=st.q[i.c];
+  const pu=num(st.p[i.c]);
+  t+=`${i.c} ${i.n}: ${o.q} cx`+(pu?` (${upc(i)} un x ${brl(pu)}`+(o.d?`, desc ${o.d}%`:'')+`) = ${brl(line(i.c))}`:(o.d?` (desc ${o.d}%)`:''))+'\n';
+ }
+ const v=s.reduce((a,i)=>a+st.q[i.c].q,0);
+ t+='\n*TOTAL: '+v+' volumes ('+s.length+' itens)*\n*VALOR TOTAL: '+brl(money())+'*';
+ if(f.obs)t+='\nObs: '+f.obs;
+ return plain?t.replace(/\*/g,''):t;
+}
+function openSum(){
+ const s=sel(),f=st.f;
+ $('hdr').innerHTML=esc([f.razao,f.cli&&'Cód. '+f.cli,f.ped&&'Pedido '+f.ped,dataBR(f.data)].filter(Boolean).join(' · '))||'Sem dados do cliente';
+ let h='<tr><th>Produto</th><th class="r">Qtd</th><th class="r">Valor</th></tr>';
+ if(!s.length)h+='<tr><td colspan="3" class="empty">Nenhum item no pedido</td></tr>';
+ for(const i of s){const o=st.q[i.c];h+=`<tr><td>${esc(i.n)}<br><span style="color:var(--mut);font-size:11.5px">${i.c} · ${esc((i.s||i.k).toLowerCase())}${i.g?' · '+esc(i.g.replace(/^.*? - /,'')):''}</span></td><td class="r">${o.q}</td><td class="r">${num(st.p[i.c])?brl(line(i.c)):'—'}${num(st.p[i.c])?'<br><span style="color:var(--mut);font-size:11px">'+brl(box(i.c))+'/cx</span>':''}${o.d?'<br><span style="color:var(--mut);font-size:11px">desc '+o.d+'%</span>':''}</td></tr>`}
+ const v=s.reduce((a,i)=>a+st.q[i.c].q,0);
+ h+=`<tr><th>TOTAL</th><th class="r">${v}</th><th class="r">${brl(money())}</th></tr>`;
+ $('sum').innerHTML=h;
+ $('wa').href='https://wa.me/?text='+encodeURIComponent(text());
+ $('msg').textContent='';
+ $('modal').classList.add('on');
+}
+$('bsum').onclick=openSum;
+$('cx').onclick=()=>$('modal').classList.remove('on');
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal')$('modal').classList.remove('on')});
+$('cp').onclick=async()=>{
+ try{await navigator.clipboard.writeText(text(true));$('msg').textContent='Pedido copiado.'}
+ catch(e){const ta=document.createElement('textarea');ta.value=text(true);document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}ta.remove();$('msg').textContent=ok?'Pedido copiado.':'Não foi possível copiar — use o botão do WhatsApp.'}
+};
+// Limpar apaga quantidades/descontos; os custos informados ficam salvos
+$('bcl').onclick=()=>{
+ if($('bcl').dataset.arm){st.q={};save();renderList();totals();$('bcl').textContent='Limpar';delete $('bcl').dataset.arm;return}
+ $('bcl').dataset.arm=1;$('bcl').textContent='Confirmar?';
+ setTimeout(()=>{if($('bcl').dataset.arm){delete $('bcl').dataset.arm;$('bcl').textContent='Limpar'}},3000);
+};
+function pad(n){return String(n).padStart(2,'0')}
+function stamp(ts){const d=new Date(ts);return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
+function fname(f,ts){const d=new Date(ts||Date.now());const c=(f.razao||'pedido').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,30)||'pedido';return 'Pedido_'+c+'_'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+'.txt'}
+function download(name,txt,msgEl){
+ try{const b=new Blob(['﻿'+txt],{type:'text/plain;charset=utf-8'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);msgEl.textContent='Arquivo gerado: '+name+' (se não baixou, use "Copiar texto").'}
+ catch(e){msgEl.textContent='Não foi possível baixar — use "Copiar texto".'}
+}
+async function copyTxt(txt,msgEl){
+ try{await navigator.clipboard.writeText(txt);msgEl.textContent='Copiado.'}
+ catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}ta.remove();msgEl.textContent=ok?'Copiado.':'Não foi possível copiar.'}
+}
+function saveOrder(){
+ const s=sel();if(!s.length){$('msg').textContent='Adicione ao menos um item antes de salvar.';return}
+ const pp={},uu={};s.forEach(i=>{if(st.p[i.c])pp[i.c]=st.p[i.c];if(st.u[i.c])uu[i.c]=st.u[i.c]});
+ const e={id:st.cur||('o'+Date.now()),ts:Date.now(),f:JSON.parse(JSON.stringify(st.f)),q:JSON.parse(JSON.stringify(st.q)),pp,uu,
+  vol:s.reduce((a,i)=>a+st.q[i.c].q,0),itens:s.length,val:money(),t:text()};
+ const ix=st.h.findIndex(x=>x.id===e.id);
+ if(ix>=0){e.ts=st.h[ix].ts;st.h[ix]=e}else st.h.unshift(e);
+ st.cur=e.id;save();
+ $('msg').textContent='Pedido salvo no histórico.';
+}
+function renderHist(){
+ if(!st.h.length){$('hl').innerHTML='<div class="empty">Nenhum pedido salvo ainda.<br>Use "Salvar no histórico" no resumo do pedido.</div>';return}
+ $('hl').innerHTML=st.h.slice().sort((a,b)=>b.ts-a.ts).map(e=>`<div class="hcard" data-id="${e.id}"><b>${esc(e.f.razao||'Sem cliente')}${e.f.ped?' · Pedido '+esc(e.f.ped):''}</b>
+ <div class="m">${stamp(e.ts)} · ${e.vol} volumes · ${e.itens} itens${e.val>0?' · '+brl(e.val):''}${st.cur===e.id?' · <b style="display:inline;color:var(--ok)">em edição</b>':''}</div>
+ <div class="row"><button data-a="ver">Ver</button><button data-a="abrir">Abrir/editar</button><button data-a="cop">Copiar</button><button data-a="txt">.txt</button><button data-a="wa">WhatsApp</button><button class="d" data-a="del">Excluir</button></div>
+ <pre>${esc(e.t.replace(/\*/g,''))}</pre></div>`).join('')
+}
+function loadFields(){FIELDS.forEach(k=>{$('f_'+k).value=st.f[k]||''})}
+$('bh').onclick=()=>{renderHist();$('hmsg').textContent='';$('hm').classList.add('on')};
+$('hx').onclick=()=>$('hm').classList.remove('on');
+$('hm').addEventListener('click',e=>{if(e.target.id==='hm')$('hm').classList.remove('on')});
+$('hnew').onclick=()=>{
+ const keep={rep:st.f.rep,prazo:st.f.prazo};const d=new Date();
+ st.f={...keep,data:d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};st.q={};st.cur=null;save();
+ loadFields();renderList();totals();$('hm').classList.remove('on');window.scrollTo(0,0);
+};
+$('hl').addEventListener('click',e=>{
+ const b=e.target.closest('button[data-a]');if(!b)return;
+ const card=b.closest('.hcard'),en=st.h.find(x=>x.id===card.dataset.id);if(!en)return;
+ const a=b.dataset.a;
+ if(a==='ver')card.querySelector('pre').classList.toggle('on');
+ else if(a==='abrir'){st.f=JSON.parse(JSON.stringify(en.f));st.q=JSON.parse(JSON.stringify(en.q));Object.assign(st.p,en.pp||{});Object.assign(st.u,en.uu||{});st.cur=en.id;save();loadFields();renderList();totals();$('hm').classList.remove('on');window.scrollTo(0,0)}
+ else if(a==='cop')copyTxt(en.t.replace(/\*/g,''),$('hmsg'));
+ else if(a==='txt')download(fname(en.f,en.ts),en.t.replace(/\*/g,''),$('hmsg'));
+ else if(a==='wa'){const l=document.createElement('a');l.href='https://wa.me/?text='+encodeURIComponent(en.t);l.target='_blank';l.rel='noopener';document.body.appendChild(l);l.click();l.remove()}
+ else if(a==='del'){if(b.dataset.arm){st.h=st.h.filter(x=>x.id!==en.id);if(st.cur===en.id)st.cur=null;save();renderHist()}else{b.dataset.arm=1;b.textContent='Confirmar?';setTimeout(()=>{b.dataset.arm='';b.textContent='Excluir'},3000)}}
+});
+$('sv').onclick=saveOrder;
+$('dl').onclick=()=>download(fname(st.f),text(true),$('msg'));
+renderChips();renderList();totals();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
