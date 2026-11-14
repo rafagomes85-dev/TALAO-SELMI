@@ -223,7 +223,7 @@ ITEMS.forEach(i=>{if(/SÊMOLA/i.test(i.s)&&/\b1\s?kg\b/i.test(i.g)){i.k='MASSAS 
 const KEY='selmi_pedido_2026_v1';
 let st={f:{},q:{}};
 try{const s=localStorage.getItem(KEY);if(s)st=JSON.parse(s)}catch(e){}
-st.f=st.f||{};st.q=st.q||{};st.p=st.p||{};st.u=st.u||{};st.h=st.h||[];
+st.f=st.f||{};st.q=st.q||{};st.p=st.p||{};st.u=st.u||{};st.h=st.h||[];st.gp=st.gp||{};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
 const $=id=>document.getElementById(id);
 const cats=['Todos',...[...new Set(ITEMS.map(i=>i.k))].sort((a,b)=>(a==='MASSAS GALO 1KG')-(b==='MASSAS GALO 1KG'))];
@@ -244,6 +244,10 @@ function ref(c){const d=PO[c];if(!d)return null;const e=encF();if(e===null)retur
  const poe=Math.round(d[0]*(1+e)*100)/100, pu=Math.round(d[1]/d[2]*10000)/10000;
  const un=Math.round(poe*pu*100)/100, cx=Math.round(poe*d[1]*100)/100;
  return {poe,un,cx,st:d[3],unST:Math.round(un*(1+d[3]/100)*100)/100,cxST:Math.round(cx*(1+d[3]/100)*100)/100}}
+function gk(c){const i=BYC[c];return i.s+'|'+i.g}
+function autoP(c,row){if(st.p[c])return false;const g=(st.gp||{})[gk(c)];if(!g)return false;
+ st.p[c]=g;if(row){const pi=row.querySelector('input[data-k=p]');if(pi)pi.value=String(g).replace('.',',')}
+ return true}
 function cls(c){const r=ref(c),p=num(st.p[c]);if(!r||!(p>0))return '';return p<r.un?'lo':'hi'}
 function pct(n){return (n>=0?'+':'')+n.toFixed(1).replace('.',',')+'%'}
 function refLine(c){const r=ref(c);
@@ -271,7 +275,7 @@ function renderList(){
   if(sk!==ls){h+=`<div class="sec">${esc(it.s||it.k)}</div>`;ls=sk;lg=''}
   if(gk!==lg&&it.g){h+=`<div class="pack">${esc(it.g)}</div>`;lg=gk}
   const v=st.q[it.c]||{};
-  const p=st.p[it.c]||'';
+  const p=String(st.p[it.c]||'').replace('.',',');
   h+=`<div class="item ${v.q>0?'has':''}" data-c="${it.c}"><div class="nm"><b>${esc(it.n)}</b><span>${it.c}</span></div>
   <div class="ref">${refLine(it.c)}</div>
   <div class="ctl"><div class="pr"><label>Valor unitário R$</label><input class="${cls(it.c)}" data-k="p" inputmode="decimal" value="${p}" placeholder="0,00"></div>
@@ -292,14 +296,16 @@ $('list').addEventListener('click',e=>{
  const b=e.target.closest('button[data-a]');if(!b)return;
  const row=b.closest('.item'),c=row.dataset.c,cur=(st.q[c]||{}).q||0;
  const nv=Math.max(0,cur+(b.dataset.a==='+'?1:-1));
+ if(nv>0)autoP(c,row);
  setQ(c,'q',nv);row.querySelector('input[data-k=q]').value=nv||'';row.classList.toggle('has',nv>0);row.querySelector('.sub').textContent=sub(c);
+ row.querySelector('.ref').innerHTML=refLine(c);row.querySelector('input[data-k=p]').className=cls(c);
 });
 $('list').addEventListener('input',e=>{
  const i=e.target;if(!i.dataset.k)return;
  const row=i.closest('.item'),c=row.dataset.c;
- if(i.dataset.k==='p'){st.p[c]=i.value.replace(',','.');if(!i.value)delete st.p[c];save();totals()}
+ if(i.dataset.k==='p'){st.p[c]=i.value.replace(',','.');if(!i.value){delete st.p[c];delete st.gp[gk(c)]}else st.gp[gk(c)]=st.p[c];save();totals()}
  else if(i.dataset.k==='u'){const n=parseInt(i.value)||0;if(n>0&&n!==BYC[c].u)st.u[c]=n;else delete st.u[c];save();totals()}
- else if(i.dataset.k==='q'){const v=parseInt(i.value)||0;setQ(c,'q',v);row.classList.toggle('has',v>0)}
+ else if(i.dataset.k==='q'){const v=parseInt(i.value)||0;if(v>0)autoP(c,row);setQ(c,'q',v);row.classList.toggle('has',v>0)}
  else setQ(c,'d',i.value.replace(',','.'));
  row.querySelector('.sub').textContent=sub(c);
  row.querySelector('.ref').innerHTML=refLine(c);
@@ -355,9 +361,12 @@ $('cp').onclick=async()=>{
  try{await navigator.clipboard.writeText(text(true));$('msg').textContent='Pedido copiado.'}
  catch(e){const ta=document.createElement('textarea');ta.value=text(true);document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}ta.remove();$('msg').textContent=ok?'Pedido copiado.':'Não foi possível copiar — use o botão do WhatsApp.'}
 };
-// Limpar apaga quantidades/descontos; os custos informados ficam salvos
+// Limpar apaga tudo: dados do pedido, quantidades, descontos e custos
 $('bcl').onclick=()=>{
- if($('bcl').dataset.arm){st.q={};save();renderList();totals();$('bcl').textContent='Limpar';delete $('bcl').dataset.arm;return}
+ if($('bcl').dataset.arm){const d=new Date();
+  st.q={};st.p={};st.u={};st.gp={};st.cur=null;
+  st.f={data:d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+  save();loadFields();renderList();totals();$('bcl').textContent='Limpar';delete $('bcl').dataset.arm;return}
  $('bcl').dataset.arm=1;$('bcl').textContent='Confirmar?';
  setTimeout(()=>{if($('bcl').dataset.arm){delete $('bcl').dataset.arm;$('bcl').textContent='Limpar'}},3000);
 };
