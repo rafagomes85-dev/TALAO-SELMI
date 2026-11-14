@@ -333,8 +333,9 @@ $('bcl').onclick=()=>{
 function pad(n){return String(n).padStart(2,'0')}
 function stamp(ts){const d=new Date(ts);return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
 function fname(f,ts){const d=new Date(ts||Date.now());const c=(f.razao||'pedido').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,30)||'pedido';return 'Pedido_'+c+'_'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+'.txt'}
+function orderCsv(q,p){return ITEMS.filter(i=>q[i.c]&&q[i.c].q>0).map(i=>{const o=q[i.c];const val=num(p[i.c])*(1-num(o.d)/100);return i.c.replace(/\./g,'')+';'+o.q+';0;'+val.toFixed(2)}).join('\n')+'\n'}
 function download(name,txt,msgEl){
- try{const b=new Blob(['﻿'+txt],{type:'text/plain;charset=utf-8'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);msgEl.textContent='Arquivo gerado: '+name+' (se não baixou, use "Copiar texto").'}
+ try{const b=new Blob([txt],{type:'text/plain;charset=utf-8'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);msgEl.textContent='Arquivo gerado: '+name+' (se não baixou, use "Copiar texto").'}
  catch(e){msgEl.textContent='Não foi possível baixar — use "Copiar texto".'}
 }
 async function copyTxt(txt,msgEl){
@@ -374,12 +375,12 @@ $('hl').addEventListener('click',e=>{
  if(a==='ver')card.querySelector('pre').classList.toggle('on');
  else if(a==='abrir'){st.f=JSON.parse(JSON.stringify(en.f));st.q=JSON.parse(JSON.stringify(en.q));Object.assign(st.p,en.pp||{});Object.assign(st.u,en.uu||{});st.cur=en.id;save();loadFields();renderList();totals();$('hm').classList.remove('on');window.scrollTo(0,0)}
  else if(a==='cop')copyTxt(en.t.replace(/\*/g,''),$('hmsg'));
- else if(a==='txt')download(fname(en.f,en.ts),en.t.replace(/\*/g,''),$('hmsg'));
+ else if(a==='txt')download(fname(en.f,en.ts),orderCsv(en.q,en.pp||{}),$('hmsg'));
  else if(a==='wa'){const l=document.createElement('a');l.href='https://wa.me/?text='+encodeURIComponent(en.t);l.target='_blank';l.rel='noopener';document.body.appendChild(l);l.click();l.remove()}
  else if(a==='del'){if(b.dataset.arm){st.h=st.h.filter(x=>x.id!==en.id);if(st.cur===en.id)st.cur=null;save();renderHist()}else{b.dataset.arm=1;b.textContent='Confirmar?';setTimeout(()=>{b.dataset.arm='';b.textContent='Excluir'},3000)}}
 });
 $('sv').onclick=saveOrder;
-$('dl').onclick=()=>download(fname(st.f),text(true),$('msg'));
+$('dl').onclick=()=>download(fname(st.f),orderCsv(st.q,st.p),$('msg'));
 renderChips();renderList();totals();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
