@@ -91,6 +91,9 @@ a.btn{text-decoration:none;text-align:center;display:block}
 .pr input.lo{border-color:var(--red);background:#fff1f2;color:var(--red2);font-weight:700}
 .pr input.hi{border-color:var(--ok);background:#f0fdf4;color:var(--ok);font-weight:700}
 .tab{margin:0 10px 6px;font-size:11.5px;color:var(--mut)}
+#tr{display:block;font-weight:700}
+#tr.hi{color:var(--ok)}
+#tr.lo{color:var(--red)}
 </style>
 </head>
 <body>
@@ -118,7 +121,7 @@ a.btn{text-decoration:none;text-align:center;display:block}
 <div id="list"></div>
 </div>
 <div class="bar">
-<div class="tot"><b id="tm">R$ 0,00</b><span><span id="tv">0 volumes</span> · <span id="ti">0 itens</span></span></div>
+<div class="tot"><b id="tm">R$ 0,00</b><span><span id="tv">0 volumes</span> · <span id="ti">0 itens</span></span><span id="tr"></span></div>
 <button class="btn sec2" id="bcl">Limpar</button>
 <button class="btn" id="bsum">Ver pedido</button>
 </div>
@@ -256,13 +259,16 @@ function gk(c){const i=BYC[c];return i.s+'|'+i.g}
 function autoP(c,row){if(st.p[c])return false;const g=(st.gp||{})[gk(c)];if(!g)return false;
  st.p[c]=g;if(row){const pi=row.querySelector('input[data-k=p]');if(pi)pi.value=String(g).replace('.',',')}
  return true}
-function cls(c){const r=ref(c),p=num(st.p[c]);if(!r||!(p>0))return '';return p<r.un?'lo':'hi'}
+function eff(c){const p=num(st.p[c]);return p>0?p*(1-num((st.q[c]||{}).d)/100):0}
+function cls(c){const r=ref(c),p=eff(c);if(!r||!(p>0))return '';return p<r.un?'lo':'hi'}
+function rent(){let t=0,b=0;for(const i of sel()){const r=ref(i.c),p=eff(i.c);if(!r||!(p>0))continue;const n=upc(i)*st.q[i.c].q;t+=p*n;b+=r.un*n}return {neg:t,tab:b,dif:t-b,pct:b>0?(t/b-1)*100:0}}
+function sgn(n){return (n<0?'\u2212':'+')+brl(Math.abs(n))}
 function pct(n){return (n>=0?'+':'')+n.toFixed(1).replace('.',',')+'%'}
 function refLine(c){const r=ref(c);
  if(!r)return PO[c]?'Escolha o prazo para ver o pre\u00e7o de tabela':'Sem pre\u00e7o de tabela';
  let s='Tabela: <b>'+brl(r.un)+'</b>/un \u00b7 '+brl(r.cx)+'/cx';
  if(r.st)s+=' \u00b7 <span class="st">c/ ST '+r.st.toFixed(2).replace('.',',')+'%: '+brl(r.unST)+'/un \u00b7 '+brl(r.cxST)+'/cx</span>';
- const p=num(st.p[c]);
+ const p=eff(c);
  if(p>0)s+=' \u00b7 <span class="dlt '+(p<r.un?'lo':'hi')+'">'+pct((p/r.un-1)*100)+'</span>';
  return s}
 function upc(it){const o=num(st.u[it.c]);return o>0?o:it.u}
@@ -322,7 +328,7 @@ $('list').addEventListener('input',e=>{
 $('list').addEventListener('focusin',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>e.target.select&&e.target.select(),0)});
 function sel(){return ITEMS.filter(i=>st.q[i.c]&&st.q[i.c].q>0)}
 function money(){return sel().reduce((a,i)=>a+line(i.c),0)}
-function totals(){$('tm').textContent=brl(money());const s=sel();const v=s.reduce((a,i)=>a+st.q[i.c].q,0);$('tv').textContent=v+(v===1?' volume':' volumes');$('ti').textContent=s.length+(s.length===1?' item':' itens')}
+function totals(){$('tm').textContent=brl(money());const rr=rent();const tr=$('tr');if(rr.tab>0){tr.textContent='Rentab. '+sgn(rr.dif)+' ('+pct(rr.pct)+')';tr.className=rr.dif<0?'lo':'hi'}else{tr.textContent='';tr.className=''}const s=sel();const v=s.reduce((a,i)=>a+st.q[i.c].q,0);$('tv').textContent=v+(v===1?' volume':' volumes');$('ti').textContent=s.length+(s.length===1?' item':' itens')}
 function dataBR(d){if(!d)return'';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d}
 function text(plain){
  const f=st.f,s=sel();
@@ -357,6 +363,7 @@ function openSum(){
  for(const i of s){const o=st.q[i.c];h+=`<tr><td>${esc(i.n)}<br><span style="color:var(--mut);font-size:11.5px">${i.c} · ${esc((i.s||i.k).toLowerCase())}${i.g?' · '+esc(i.g.replace(/^.*? - /,'')):''}</span></td><td class="r">${o.q}</td><td class="r">${num(st.p[i.c])?brl(line(i.c)):'—'}${num(st.p[i.c])?'<br><span style="color:var(--mut);font-size:11px">'+brl(box(i.c))+'/cx</span>':''}${o.d?'<br><span style="color:var(--mut);font-size:11px">desc '+o.d+'%</span>':''}</td></tr>`}
  const v=s.reduce((a,i)=>a+st.q[i.c].q,0);
  h+=`<tr><th>TOTAL</th><th class="r">${v}</th><th class="r">${brl(money())}</th></tr>`;
+ const rr=rent();if(rr.tab>0)h+=`<tr><td colspan="2" style="color:var(--mut)">Rentabilidade vs. tabela<br><span style="font-size:11px">uso interno \u2014 n\u00e3o sai no WhatsApp nem no .txt</span></td><td class="r" style="font-weight:700;color:${rr.dif<0?'var(--red)':'var(--ok)'}">${sgn(rr.dif)}<br><span style="font-size:11px">${pct(rr.pct)}</span></td></tr>`;
  $('sum').innerHTML=h;
  $('wa').href='https://wa.me/?text='+encodeURIComponent(text());
  $('msg').textContent='';
