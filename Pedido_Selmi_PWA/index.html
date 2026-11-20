@@ -256,9 +256,9 @@ function encF(){const e=ENC[st.f.prazo];return e===undefined?null:e}
 // up(): arredonda sempre para cima, no centavo
 function up(n){return Math.ceil(Math.round(n*10000)/100)/100}
 function ref(c){const d=PO[c];if(!d)return null;const e=encF();if(e===null)return null;
- const poe=up(d[0]*(1+e)), pu=Math.round(d[1]/d[2]*10000)/10000;
- const un=up(poe*pu), cx=up(poe*d[1]);
- return {poe,un,cx,st:d[3],unST:up(un*(1+d[3]/100)),cxST:up(cx*(1+d[3]/100))}}
+ const poe=up(d[0]*(1+e)), pu=Math.round(d[1]/d[2]*10000)/10000, n=upc(BYC[c]);
+ const un=up(poe*pu), cx=up(un*n), unST=up(un*(1+d[3]/100));
+ return {poe,un,cx,st:d[3],unST,cxST:up(unST*n)}}
 function gk(c){const i=BYC[c];return i.s+'|'+i.g}
 function autoP(c,row){if(st.p[c])return false;const g=(st.gp||{})[gk(c)];if(!g)return false;
  st.p[c]=g;if(row){const pi=row.querySelector('input[data-k=p]');if(pi)pi.value=String(g).replace('.',',')}
