@@ -51,7 +51,7 @@ textarea{min-height:56px;resize:vertical}
 .qty{display:flex;align-items:center;gap:4px}
 .qty button{width:34px;height:36px;border:1px solid var(--line);background:#fff;border-radius:9px;font-size:20px;line-height:1;color:var(--ink)}
 .qty input{width:50px;text-align:center;padding:8px 2px;font-size:16px;font-weight:600}
-.dsc{width:58px}
+.dsc{width:70px}
 .dsc input{padding:8px 4px;text-align:center;font-size:14px}
 .dsc label{text-align:center;margin:0}
 .empty{text-align:center;color:var(--mut);padding:30px}
@@ -93,6 +93,7 @@ a.btn{text-decoration:none;text-align:center;display:block}
 .tab{margin:0 10px 6px;font-size:11.5px;color:var(--mut)}
 #tms{display:block;font-size:12px;color:#9a3412;font-weight:600}
 .sub .st{color:#9a3412;font-weight:600}
+.sub .bn{color:#1d4ed8;font-weight:600}
 #tr{display:block;font-weight:700}
 #tr.hi{color:var(--ok)}
 #tr.lo{color:var(--red)}
@@ -263,9 +264,11 @@ function gk(c){const i=BYC[c];return i.s+'|'+i.g}
 function autoP(c,row){if(st.p[c])return false;const g=(st.gp||{})[gk(c)];if(!g)return false;
  st.p[c]=g;if(row){const pi=row.querySelector('input[data-k=p]');if(pi)pi.value=String(g).replace('.',',')}
  return true}
-function eff(c){const p=num(st.p[c]);return p>0?p*(1-num((st.q[c]||{}).d)/100):0}
+function bon(c){const o=st.q[c];return o?Math.max(0,parseInt(o.b)||0):0}
+function vol(c){const o=st.q[c];return (o&&o.q>0?o.q:0)+bon(c)}
+function eff(c){const v=vol(c),n=upc(BYC[c]);return v>0&&n>0?line(c)/v/n:0}
 function cls(c){const r=ref(c),p=eff(c);if(!r||!(p>0))return '';return p<r.un?'lo':'hi'}
-function rent(){let t=0,b=0;for(const i of sel()){const r=ref(i.c),p=eff(i.c);if(!r||!(p>0))continue;const n=upc(i)*st.q[i.c].q;t+=p*n;b+=r.un*n}return {neg:t,tab:b,dif:t-b,pct:b>0?(t/b-1)*100:0}}
+function rent(){let t=0,b=0;for(const i of sel()){const r=ref(i.c);if(!r||!(num(st.p[i.c])>0))continue;t+=line(i.c);b+=vol(i.c)*r.cx}return {neg:t,tab:b,dif:t-b,pct:b>0?(t/b-1)*100:0}}
 function sgn(n){return (n<0?'\u2212':'+')+brl(Math.abs(n))}
 function pct(n){return (n>=0?'+':'')+n.toFixed(1).replace('.',',')+'%'}
 function refLine(c){const r=ref(c);
@@ -277,14 +280,15 @@ function refLine(c){const r=ref(c);
  return s}
 function upc(it){const o=num(st.u[it.c]);return o>0?o:it.u}
 // preco por caixa fechado no centavo, p/ cima: assim qtd x caixa bate com o total
-function box(c){return up(upc(BYC[c])*num(st.p[c])*(1-num((st.q[c]||{}).d)/100))}
+function box(c){return up(upc(BYC[c])*num(st.p[c]))}
 function line(c){const o=st.q[c];if(!o||!(o.q>0))return 0;return o.q*box(c)}
 function stp(c){const d=PO[c];return d?d[3]:0}
 function boxST(c){return up(box(c)*(1+stp(c)/100))}
 function lineST(c){const o=st.q[c];if(!o||!(o.q>0))return 0;return o.q*boxST(c)}
 function moneyST(){return sel().reduce((a,i)=>a+lineST(i.c),0)}
-function sub(c){const b=box(c);if(!(b>0))return '';const l=line(c);
+function sub(c){const b=box(c);if(!(b>0))return '';const l=line(c),bo=bon(c),n=upc(BYC[c]);
  let s=brl(b)+'/cx'+(l>0?' → '+brl(l):'');
+ if(bo>0&&l>0)s+='<br><span class="bn">+'+bo+' bonif. → efetivo '+brl(eff(c)*n)+'/cx ('+brl(eff(c))+'/un)</span>';
  if(stp(c))s+='<br><span class="st">c/ ST '+brl(boxST(c))+'/cx'+(l>0?' → '+brl(lineST(c)):'')+'</span>';
  return s}
 function norm(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()}
@@ -306,7 +310,7 @@ function renderList(){
   <div class="ref">${refLine(it.c)}</div>
   <div class="ctl"><div class="pr"><label>Valor unitário R$</label><input class="${cls(it.c)}" data-k="p" inputmode="decimal" value="${p}" placeholder="0,00"></div>
   <div class="upc"><label>Un. por cx</label><input data-k="u" inputmode="numeric" value="${upc(it)}"></div>
-  <div class="dsc"><label>Desc %</label><input data-k="d" inputmode="decimal" value="${v.d||''}" placeholder="0"></div></div>
+  <div class="dsc"><label>Bonif. cx</label><input data-k="b" inputmode="numeric" value="${v.b||''}" placeholder="0"></div></div>
   <div class="ctl2"><div class="qty"><button data-a="-">−</button><input data-k="q" inputmode="numeric" value="${v.q||''}" placeholder="0"><button data-a="+">+</button></div>
   <div class="sub">${sub(it.c)}</div></div></div>`;
  }
@@ -314,8 +318,8 @@ function renderList(){
 }
 function setQ(code,k,val){
  const o=st.q[code]||(st.q[code]={});
- if(k==='q'){val=Math.max(0,parseInt(val)||0);o.q=val}else{o.d=val}
- if(!o.q&&!o.d)delete st.q[code];
+ if(k==='q'){val=Math.max(0,parseInt(val)||0);o.q=val}else{o.b=Math.max(0,parseInt(val)||0)||''}
+ if(!o.q&&!o.b)delete st.q[code];
  save();totals();
 }
 $('list').addEventListener('click',e=>{
@@ -332,15 +336,15 @@ $('list').addEventListener('input',e=>{
  if(i.dataset.k==='p'){st.p[c]=i.value.replace(',','.');if(!i.value){delete st.p[c];delete st.gp[gk(c)]}else st.gp[gk(c)]=st.p[c];save();totals()}
  else if(i.dataset.k==='u'){const n=parseInt(i.value)||0;if(n>0&&n!==BYC[c].u)st.u[c]=n;else delete st.u[c];save();totals()}
  else if(i.dataset.k==='q'){const v=parseInt(i.value)||0;if(v>0)autoP(c,row);setQ(c,'q',v);row.classList.toggle('has',v>0)}
- else setQ(c,'d',i.value.replace(',','.'));
+ else {if((parseInt(i.value)||0)>0)autoP(c,row);setQ(c,'b',i.value)}
  row.querySelector('.sub').innerHTML=sub(c);
  row.querySelector('.ref').innerHTML=refLine(c);
  row.querySelector('input[data-k=p]').className=cls(c);
 });
 $('list').addEventListener('focusin',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>e.target.select&&e.target.select(),0)});
-function sel(){return ITEMS.filter(i=>st.q[i.c]&&st.q[i.c].q>0)}
+function sel(){return ITEMS.filter(i=>st.q[i.c]&&(st.q[i.c].q>0||bon(i.c)>0))}
 function money(){return sel().reduce((a,i)=>a+line(i.c),0)}
-function totals(){$('tm').textContent=brl(money());const _ms=moneyST();$('tms').textContent=_ms>money()?'c/ ST '+brl(_ms):'';const rr=rent();const tr=$('tr');if(rr.tab>0){tr.textContent='Rentab. '+sgn(rr.dif)+' ('+pct(rr.pct)+')';tr.className=rr.dif<0?'lo':'hi'}else{tr.textContent='';tr.className=''}const s=sel();const v=s.reduce((a,i)=>a+st.q[i.c].q,0);$('tv').textContent=v+(v===1?' volume':' volumes');$('ti').textContent=s.length+(s.length===1?' item':' itens')}
+function totals(){$('tm').textContent=brl(money());const _ms=moneyST();$('tms').textContent=_ms>money()?'c/ ST '+brl(_ms):'';const rr=rent();const tr=$('tr');if(rr.tab>0){tr.textContent='Rentab. '+sgn(rr.dif)+' ('+pct(rr.pct)+')';tr.className=rr.dif<0?'lo':'hi'}else{tr.textContent='';tr.className=''}const s=sel();const v=s.reduce((a,i)=>a+vol(i.c),0),bo=s.reduce((a,i)=>a+bon(i.c),0);$('tv').textContent=v+(v===1?' volume':' volumes')+(bo?' ('+bo+' bonif.)':'');$('ti').textContent=s.length+(s.length===1?' item':' itens')}
 function dataBR(d){if(!d)return'';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d}
 function text(plain){
  const f=st.f,s=sel();
@@ -360,10 +364,12 @@ function text(plain){
   if(hd!==last){t+='\n*'+hd+'*\n';last=hd}
   const o=st.q[i.c];
   const pu=num(st.p[i.c]);
-  t+=`${i.c} ${i.n}: ${o.q} cx`+(pu?` (${upc(i)} un x ${brl(pu)}`+(o.d?`, desc ${o.d}%`:'')+`) = ${brl(line(i.c))}`:(o.d?` (desc ${o.d}%)`:''))+'\n';
+  const bo=bon(i.c);
+  t+=`${i.c} ${i.n}: ${o.q} cx`+(bo?` + ${bo} bonif.`:'')+(pu?` (${upc(i)} un x ${brl(pu)}) = ${brl(line(i.c))}`:'')+'\n';
  }
- const v=s.reduce((a,i)=>a+st.q[i.c].q,0);
- t+='\n*TOTAL: '+v+' volumes ('+s.length+' itens)*\n*VALOR TOTAL: '+brl(money())+'*';
+ const v=s.reduce((a,i)=>a+vol(i.c),0);
+ const bo=s.reduce((a,i)=>a+bon(i.c),0);
+ t+='\n*TOTAL: '+v+' volumes'+(bo?' ('+bo+' bonif.)':'')+' ('+s.length+' itens)*\n*VALOR TOTAL: '+brl(money())+'*';
  if(f.obs)t+='\nObs: '+f.obs;
  return plain?t.replace(/\*/g,''):t;
 }
@@ -372,8 +378,8 @@ function openSum(){
  $('hdr').innerHTML=esc([f.razao,f.cli&&'Cód. '+f.cli,f.ped&&'Pedido '+f.ped,dataBR(f.data)].filter(Boolean).join(' · '))||'Sem dados do cliente';
  let h='<tr><th>Produto</th><th class="r">Qtd</th><th class="r">Valor</th></tr>';
  if(!s.length)h+='<tr><td colspan="3" class="empty">Nenhum item no pedido</td></tr>';
- for(const i of s){const o=st.q[i.c];h+=`<tr><td>${esc(i.n)}<br><span style="color:var(--mut);font-size:11.5px">${i.c} · ${esc((i.s||i.k).toLowerCase())}${i.g?' · '+esc(i.g.replace(/^.*? - /,'')):''}</span></td><td class="r">${o.q}</td><td class="r">${num(st.p[i.c])?brl(line(i.c)):'—'}${num(st.p[i.c])?'<br><span style="color:var(--mut);font-size:11px">'+brl(box(i.c))+'/cx</span>':''}${stp(i.c)?'<br><span style="color:#9a3412;font-size:11px">c/ ST '+brl(lineST(i.c))+'</span>':''}${o.d?'<br><span style="color:var(--mut);font-size:11px">desc '+o.d+'%</span>':''}</td></tr>`}
- const v=s.reduce((a,i)=>a+st.q[i.c].q,0);
+ for(const i of s){const o=st.q[i.c];h+=`<tr><td>${esc(i.n)}<br><span style="color:var(--mut);font-size:11.5px">${i.c} · ${esc((i.s||i.k).toLowerCase())}${i.g?' · '+esc(i.g.replace(/^.*? - /,'')):''}</span></td><td class="r">${o.q||0}${bon(i.c)?'<br><span style="color:#1d4ed8;font-size:11px">+'+bon(i.c)+' bonif.</span>':''}</td><td class="r">${num(st.p[i.c])?brl(line(i.c)):'—'}${num(st.p[i.c])?'<br><span style="color:var(--mut);font-size:11px">'+brl(box(i.c))+'/cx</span>':''}${stp(i.c)?'<br><span style="color:#9a3412;font-size:11px">c/ ST '+brl(lineST(i.c))+'</span>':''}${bon(i.c)&&num(st.p[i.c])?'<br><span style="color:#1d4ed8;font-size:11px">efetivo '+brl(eff(i.c)*upc(i))+'/cx</span>':''}</td></tr>`}
+ const v=s.reduce((a,i)=>a+vol(i.c),0);
  h+=`<tr><th>TOTAL</th><th class="r">${v}</th><th class="r">${brl(money())}</th></tr>`;
  const _ms=moneyST();if(_ms>money())h+=`<tr><th style="color:#9a3412">TOTAL c/ ST</th><th></th><th class="r" style="color:#9a3412">${brl(_ms)}</th></tr>`;
  const rr=rent();if(rr.tab>0)h+=`<tr><td colspan="2" style="color:var(--mut)">Rentabilidade vs. tabela<br><span style="font-size:11px">uso interno \u2014 n\u00e3o sai no WhatsApp nem no .txt</span></td><td class="r" style="font-weight:700;color:${rr.dif<0?'var(--red)':'var(--ok)'}">${sgn(rr.dif)}<br><span style="font-size:11px">${pct(rr.pct)}</span></td></tr>`;
@@ -401,7 +407,7 @@ $('bcl').onclick=()=>{
 function pad(n){return String(n).padStart(2,'0')}
 function stamp(ts){const d=new Date(ts);return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
 function fname(f,ts){const d=new Date(ts||Date.now());const c=(f.razao||'pedido').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,30)||'pedido';return 'Pedido_'+c+'_'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+'.txt'}
-function orderCsv(q,p){return ITEMS.filter(i=>q[i.c]&&q[i.c].q>0).map(i=>{const o=q[i.c];const val=num(p[i.c])*(1-num(o.d)/100);return i.c.replace(/\./g,'')+';'+o.q+';0;'+val.toFixed(2)}).join('\n')+'\n'}
+function orderCsv(q,p){return ITEMS.filter(i=>q[i.c]&&((q[i.c].q>0)||(parseInt(q[i.c].b)||0)>0)).map(i=>{const o=q[i.c];const b=Math.max(0,parseInt(o.b)||0);return i.c.replace(/\./g,'')+';'+(o.q||0)+';'+b+';'+num(p[i.c]).toFixed(2)}).join('\n')+'\n'}
 function download(name,txt,msgEl){
  try{const b=new Blob([txt],{type:'text/plain;charset=utf-8'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);msgEl.textContent='Arquivo gerado: '+name+' (se não baixou, use "Copiar texto").'}
  catch(e){msgEl.textContent='Não foi possível baixar — use "Copiar texto".'}
